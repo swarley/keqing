@@ -72,4 +72,19 @@ class Interaction extends DataTransferObject
     {
         return $this->user?->id ?? $this->member->user->id;
     }
+
+    public function focusedArgument(): ?InteractionOption
+    {
+        $options = $this->data->options;
+
+        if (($options[0] ?? null)?->type === 2) {
+            $options = $options[0]->options;
+        }
+
+        if (($options[0] ?? null)?->type === 1) {
+            $options = $options[0]->options;
+        }
+
+        return collect($options)->first(fn ($opt) => $opt->focused === true);
+    }
 }

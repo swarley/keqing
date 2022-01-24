@@ -31,6 +31,7 @@ class Argument
             'name' => Str::kebab($this->name),
             'description' => $this->description,
             'required' => $this->required,
+            'autocomplete' => (bool)$this->autocomplete,
         ];
     }
 }

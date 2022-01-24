@@ -33,7 +33,11 @@ class InteractionController extends Controller
             return $this->dispatchComponent($interaction);
         }
 
-        Log::error('Invalid interaction type', $interaction->type);
+        if ($interaction->type === 4) {
+            return $this->dispatchAutocomplete($interaction);
+        }
+
+        Log::error("Invalid interaction type: $interaction->type");
         return response()->json(['message' => 'invalid interaction type'], 400);
     }
 
@@ -93,6 +97,42 @@ class InteractionController extends Controller
         return response()->json($responseData);
     }
 
+    private function dispatchAutocomplete(Interaction $interaction): JsonResponse
+    {
+        $commandController = $this->findCommand($interaction->data->name);
+
+        if (!$commandController) {
+            Log::error("Failed to find controller for command {$interaction->data->name}");
+            return response()->json([], 404);
+        }
+
+        $options = $interaction->data->options;
+        $firstOption = $options[0] ?? null;
+        $subcommandName = null;
+
+        if ($firstOption?->type === 1) {
+            $subcommandName = Str::camel($firstOption->name);
+            $options = $firstOption->options;
+        }
+
+        $method = (new ReflectionClass($commandController))->getMethod($subcommandName ?? '__invoke');
+        $attr = $method->getAttributes(ApplicationCommand\Autocomplete::class)[0] ?? null;
+        $controller = $attr->getArguments()[0];
+        $focusedArgument = $interaction->focusedArgument();
+
+        $values = (new $controller)->{Str::camel($focusedArgument->name)}($interaction, $focusedArgument->value);
+        $choices = [];
+
+        foreach ($values as $name => $value) {
+            $choices[] = ['name' => $name, 'value' => $value];
+        }
+
+        return response()->json([
+           'type' => 8,
+           'data' => ['choices' => $choices],
+        ]);
+    }
+
     private function findCommand(string $name): ?string
     {
         return collect(config('discord.application_commands'))->first(function ($controller) use ($name) {
@@ -120,4 +160,5 @@ class InteractionController extends Controller
             }
         });
     }
+
 }
