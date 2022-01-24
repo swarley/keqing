@@ -4,7 +4,7 @@ namespace App\Attributes\ApplicationCommand\Arguments;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::IS_REPEATABLE)]
 class NumberArg extends ChoicesArgument
 {
 

@@ -5,7 +5,7 @@ namespace App\Attributes\ApplicationCommand\Arguments;
 use App\Attributes\ApplicationCommand\Argument;
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::IS_REPEATABLE)]
 class ChannelArg extends Argument
 {
     public const ARGUMENT_TYPE = 7;

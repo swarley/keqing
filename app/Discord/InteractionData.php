@@ -8,9 +8,9 @@ use Spatie\DataTransferObject\Casters\ArrayCaster;
 
 class InteractionData extends DataTransferObject
 {
-    public string $id;
-    public string $name;
-    public int $type;
+    public ?string $id;
+    public ?string $name;
+    public ?int $type;
     public ?array $resolved;
     #[CastWith(ArrayCaster::class, itemType: InteractionOption::class)]
     public ?array $options;

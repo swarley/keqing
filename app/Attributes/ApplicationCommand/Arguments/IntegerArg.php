@@ -4,7 +4,7 @@ namespace App\Attributes\ApplicationCommand\Arguments;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::IS_REPEATABLE)]
 class IntegerArg extends ChoicesArgument
 {
     public const ARGUMENT_TYPE = 4;

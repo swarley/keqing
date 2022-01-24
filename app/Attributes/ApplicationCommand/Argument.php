@@ -3,8 +3,9 @@
 namespace App\Attributes\ApplicationCommand;
 
 use Attribute;
+use Illuminate\Support\Str;
 
-#[Attribute]
+#[Attribute(Attribute::IS_REPEATABLE)]
 class Argument
 {
     public int $type;
@@ -27,7 +28,7 @@ class Argument
     public function toArray() {
         return [
             'type' => $this->type,
-            'name' => $this->name,
+            'name' => Str::kebab($this->name),
             'description' => $this->description,
             'required' => $this->required,
         ];

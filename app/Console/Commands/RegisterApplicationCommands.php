@@ -6,6 +6,7 @@ use App\Attributes\ApplicationCommand;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use ReflectionClass;
 
 class RegisterApplicationCommands extends Command
@@ -78,6 +79,7 @@ class RegisterApplicationCommands extends Command
         }
 
         $commandAttributes = $class->getAttributes(ApplicationCommand::class);
+        $subcommandGroups = $class->getAttributes(ApplicationCommand\Group::class);
 
         if (empty($commandAttributes)) {
             $this->error("$controller does not have an InteractionData annotation");
@@ -87,10 +89,48 @@ class RegisterApplicationCommands extends Command
         $commandData = $commandAttributes[0]->getArguments();
         $commandData['options'] = [];
 
-        foreach ($class->getMethods() as $method) {
-            $arguments = $method->getAttributes(ApplicationCommand\Argument::class, 2);
+        foreach ($subcommandGroups as $group) {
+            $groupData = $group->getArguments();
+            $commandData['options'][] = [
+                'type' => 2,
+                'name' => $groupData['name'],
+                'description' => $groupData['description'],
+                'options' => [],
+            ];
+        }
 
-            if (!empty($arguments)) {
+        foreach ($class->getMethods() as $method) {
+            $subcommand = $method->getAttributes(ApplicationCommand\Subcommand::class, 2)[0] ?? null;
+            $arguments = $method->getAttributes(ApplicationCommand\Argument::class, 2);
+            $group = $method->getAttributes(ApplicationCommand\Group::class, 2)[0] ?? null;
+            $subcommandData = null;
+
+            if ($subcommand) {
+                $subcommandArgs = $subcommand->getArguments();
+                $name = $subcommandArgs['name'] ?? Str::kebab($method->name);
+
+                $subcommandData = [
+                    'type' => 1,
+                    'name' => $name,
+                    'description' => $subcommandArgs['description'],
+                    'options' => []
+                ];
+
+                foreach ($arguments as $argument) {
+                    $subcommandData['options'][] = $argument->newInstance()->toArray();
+                }
+
+                if ($group) {
+                    $groupArgs = $group->getArguments();
+                    $groupIndex = array_search($groupArgs['name'], array_column($commandData['options'], 'name'));
+
+                    $commandData['options'][$groupIndex]['options'][] = $subcommandData;
+                }
+                else {
+                    $commandData['options'][] = $subcommandData;
+                }
+
+            } elseif (!empty($arguments)) {
                 foreach ($arguments as $argument) {
                     $commandData['options'][] = $argument->newInstance()->toArray();
                 }

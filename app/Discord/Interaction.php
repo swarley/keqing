@@ -2,6 +2,8 @@
 
 namespace App\Discord;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Spatie\DataTransferObject\DataTransferObject;
 
 class Interaction extends DataTransferObject
@@ -24,5 +26,50 @@ class Interaction extends DataTransferObject
     public function response(): InteractionResponse
     {
         return new InteractionResponse($this);
+    }
+
+    public function name(): string
+    {
+        return $this->data->name;
+    }
+
+    public function group(): ?string
+    {
+        $firstOption = collect($this->data->options)->first();
+
+        if ($firstOption->type === 2) {
+            return $firstOption->name;
+        }
+
+        return null;
+    }
+
+    public function subcommand(): ?string
+    {
+        $firstOption = collect($this->data->options)->first();
+
+        return match ($firstOption->type) {
+            1 => $firstOption->name,
+            2 => collect($firstOption->options)->first()->name,
+            default => null,
+        };
+    }
+
+    public function namespace(): string
+    {
+        if ($this->type === 2) {
+            return implode('.', array_filter([$this->name(), $this->group(), $this->subcommand()]));
+        }
+
+        if ($this->type === 3) {
+            return collect(explode("\0", $this->data->custom_id))->first();
+        }
+
+        return '';
+    }
+
+    public function userId(): string
+    {
+        return $this->user?->id ?? $this->member->user->id;
     }
 }

@@ -6,7 +6,7 @@ use App\Attributes\ApplicationCommand\Argument;
 
 class ChoicesArgument extends Argument
 {
-    public array $choices;
+    public ?array $choices;
 
     public function __construct(string $name, string $description, bool $required = false, bool $autocomplete = false,
                                 ?array $choices = null)
@@ -15,6 +15,7 @@ class ChoicesArgument extends Argument
             throw new \Exception('Cannot have autocomplete with choices.');
         }
 
+        $this->choices = null;
         if ($choices) {
             $this->choices = [];
 
