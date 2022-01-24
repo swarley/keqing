@@ -11,6 +11,7 @@ use App\Discord\RowBuilder;
 use App\Models\Favorite;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Log;
+use Spatie\DataTransferObject\Exceptions\UnknownProperties;
 
 class DanbooruService
 {
@@ -18,8 +19,15 @@ class DanbooruService
     {
         Log::info("Rendering post: $id");
 
+        $post = null;
+        $existsNext = true;
+
         /** @var ?Post $post */
-        $post = Post::search($tags . ' -status:deleted', $rating, 1, $id)->first();
+        try {
+            $post = Post::search($tags . ' -status:deleted -status:pending', $rating, 2, $id)->first();
+        } catch (UnknownProperties $ex) {
+            report ($ex);
+        }
 
         if (!$post && !$id) {
             return $response->content("No results found for `$tags`");
