@@ -11,8 +11,10 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
+        "laravel/socialite": "^5.3",
         "laravel/telescope": "^4.7",
         "laravel/tinker": "^2.5",
+        "socialiteproviders/discord": "^4.1",
         "spatie/data-transfer-object": "^3.7"
     },
     "require-dev": {

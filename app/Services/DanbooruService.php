@@ -19,7 +19,7 @@ class DanbooruService
         Log::info("Rendering post: $id");
 
         /** @var ?Post $post */
-        $post = Post::search($tags, $rating, 1, $id)->first();
+        $post = Post::search($tags . ' -status:deleted', $rating, 1, $id)->first();
 
         if (!$post && !$id) {
             return $response->content("No results found for `$tags`");
