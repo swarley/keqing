@@ -6,10 +6,15 @@ use App\Attributes\ApplicationCommand;
 use App\Attributes\ApplicationCommand\Subcommand;
 use App\Attributes\ApplicationCommand\Arguments\StringArg;
 use App\Attributes\ApplicationCommand\Autocomplete;
+use App\Danbooru\Post;
+use App\Danbooru\Wiki;
+use App\Discord\EmbedBuilder;
 use App\Discord\Interaction;
 use App\Discord\InteractionResponse;
 use App\Http\Controllers\Autocomplete\DanbooruSearchController;
+use App\Http\Controllers\Autocomplete\DanbooruWikiController;
 use App\Services\DanbooruService;
+use Illuminate\Support\Facades\Http;
 
 #[ApplicationCommand(
     name: 'danbooru',
@@ -36,5 +41,49 @@ class DanbooruController
         $userId = $interaction->user?->id ?? $interaction->member->user->id;
 
         return DanbooruService::renderFavorites($interaction->response(), $userId);
+    }
+
+    #[Subcommand(description: "See information about a tag")]
+    #[Autocomplete(DanbooruWikiController::class)]
+    #[StringArg(name: 'tag', description: 'The tag to look up.', required: true, autocomplete: true)]
+    public function wiki(Interaction $interaction, string $tag): InteractionResponse
+    {
+        $consequentTag = Http::get("https://danbooru.donmai.us/tag_aliases.json?search[name_matches]=$tag")->json('0.consequent_name');
+
+        if (!$consequentTag) {
+            return $interaction->response()
+                ->ephemeral()
+                ->content("Unable to find tag `$tag`.");
+        }
+
+        $wiki = Wiki::findForTag($consequentTag);
+
+        if (!$wiki) {
+            return $interaction->response()
+                ->ephemeral()
+                ->content("No wiki page for `$consequentTag`.");
+        }
+
+        $posts = Post::search($consequentTag, null, 4);
+
+        $response = $interaction
+            ->response()
+            ->embed(fn (EmbedBuilder $builder) =>
+                $builder
+                    ->url("https://danbooru.donmai.us/wiki_pages/$wiki->title")
+                    ->title($wiki->title)
+                    ->description(dtext_to_markdown($wiki->body))
+                    ->footer(text: "Wiki ID: $wiki->id")
+            );
+
+        $posts->each(fn (Post $post) => $response
+            ->embed(fn (EmbedBuilder $builder) =>
+                $builder
+                    ->url("https://danbooru.donmai.us/wiki_pages/$wiki->title")
+                    ->image($post->file_url)
+            )
+        );
+
+        return $response;
     }
 }

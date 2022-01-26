@@ -19,6 +19,12 @@ class Post extends DataTransferObject
     public string $file_url;
     public string $file_ext;
     public string $rating;
+    public string $tag_string_general;
+    public string $tag_string_character;
+    public string $tag_string_copyright;
+    public string $tag_string_artist;
+    public string $tag_string_meta;
+
 
     public const SEARCH_URL = 'https://danbooru.donmai.us/posts.json';
 
