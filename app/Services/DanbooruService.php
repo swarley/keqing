@@ -81,6 +81,15 @@ class DanbooruService
     {
         $data = [$tags, $rating, $id];
 
+        if ($withLink) {
+            $builder->row(fn (RowBuilder $row) =>
+            $row->linkButton(
+                label: 'View On Danbooru',
+                url: "https://danbooru.donmai.us/posts/$id",
+            )
+            );
+        }
+
         $builder->row(fn (RowBuilder $row) =>
             $row
                 ->primaryButton(
@@ -102,15 +111,6 @@ class DanbooruService
                     emoji: ['id' => config('danbooru.emoji.star')]
                 )
         );
-
-        if ($withLink) {
-            $builder->row(fn (RowBuilder $row) =>
-                $row->linkButton(
-                    label: 'View On Danbooru',
-                    url: "https://danbooru.donmai.us/posts/$id",
-                )
-            );
-        }
 
         return $builder;
     }
