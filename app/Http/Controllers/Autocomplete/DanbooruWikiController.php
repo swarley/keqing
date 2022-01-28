@@ -17,7 +17,7 @@ class DanbooruWikiController extends Controller
         $pages = [];
 
         foreach ($results as $result) {
-            $pages[$result['label']] = $result['value'];
+            $pages[$result['value']] = $result['value'];
         }
 
         return $pages;
