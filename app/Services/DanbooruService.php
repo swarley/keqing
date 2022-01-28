@@ -81,7 +81,7 @@ class DanbooruService
     {
         $data = [$tags, $rating, $id];
 
-        return $builder->row(function(RowBuilder $row) use ($data, $id, $forwardDisabled, $backDisabled, $withLink) {
+        $builder->row(fn (RowBuilder $row) =>
             $row
                 ->primaryButton(
                     customId: encode_custom_id('danbooru.search', 'after', $data),
@@ -100,18 +100,19 @@ class DanbooruService
                 ->secondaryButton(
                     customId: encode_custom_id('danbooru.utility', 'favorite', [$id]),
                     emoji: ['id' => config('danbooru.emoji.star')]
-                );
+                )
+        );
 
-            if ($withLink) {
+        if ($withLink) {
+            $builder->row(fn (RowBuilder $row) =>
                 $row->linkButton(
                     label: 'View On Danbooru',
                     url: "https://danbooru.donmai.us/posts/$id",
-                );
-            }
+                )
+            );
+        }
 
-            return $row;
-        });
-
+        return $builder;
     }
 
     public static function renderFavorites(InteractionResponse $response, string $userId, ?string $encodedCursor = null): InteractionResponse
