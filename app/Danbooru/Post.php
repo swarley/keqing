@@ -17,6 +17,8 @@ class Post extends DataTransferObject
 
     public int $id;
     public string $file_url;
+    public ?string $large_file_url;
+    public ?string $preview_file_url;
     public string $file_ext;
     public string $rating;
     public string $tag_string_general;
@@ -79,5 +81,16 @@ class Post extends DataTransferObject
             Log::error('Failed to load post DTO', $resp->json());
             return null;
         }
+    }
+
+    public static function random(string $tags): ?Post
+    {
+        $resp = Http::get("https://danbooru.donmai.us/posts/random.json?tags=$tags")->json();
+
+        if (!$resp) {
+            return null;
+        }
+
+        return new static($resp);
     }
 }

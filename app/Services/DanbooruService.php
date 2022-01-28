@@ -40,46 +40,78 @@ class DanbooruService
                 );
         }
 
+        $ext = pathinfo($post->large_file_url, PATHINFO_EXTENSION);
+
+        if (in_array($ext, ['jpg', 'png', 'gif', 'webp', 'jpeg'])) {
+            return $response
+                ->embed(fn(EmbedBuilder $embed) => $embed
+                    ->image($post->large_file_url)
+                    ->author("Danbooru", "https://danbooru.donmai.us/posts/$post->id")
+                    ->color(match ($post->rating[0]) {
+                        's' => config('discord.safe_color'),
+                        'q' => config('discord.questionable_color'),
+                        'e' => config('discord.explicit_color'),
+                        default => 0,
+                    })
+                    ->footer(text: "Post ID: $post->id")
+                )
+                ->components(fn(ComponentsBuilder $builder) =>
+                    static::searchComponents($builder, $tags, $rating, $post->id)
+                );
+        }
+
+        if (in_array($ext, ['mp4', 'webm'])) {
+            return $response
+                ->content($post->large_file_url)
+                ->components(fn(ComponentsBuilder $builder) =>
+                    static::searchComponents($builder, $tags, $rating, $post->id)
+                );
+        }
+
         return $response
-            ->embed(fn(EmbedBuilder $embed) => $embed
-                ->author("Danbooru", "https://danbooru.donmai.us/posts/$post->id")
-                ->image($post->file_url)
-                ->color(match ($post->rating[0]) {
-                    's' => config('discord.safe_color'),
-                    'q' => config('discord.questionable_color'),
-                    'e' => config('discord.explicit_color'),
-                    default => 0,
-                })
-                ->footer(text: "Post ID: $post->id")
-            )
+            ->content("Can't display file of type `$ext`")
             ->components(fn(ComponentsBuilder $builder) =>
-                static::searchComponents($builder, $tags, $rating, $post->id)
+                static::searchComponents($builder, $tags, $rating, $post->id, withLink: true)
             );
     }
 
     public static function searchComponents(ComponentsBuilder $builder, ?string $tags, ?string $rating, ?string $id,
-                    ?bool $forwardDisabled = false, ?bool $backDisabled = false): ComponentsBuilder
+                    ?bool $forwardDisabled = false, ?bool $backDisabled = false, bool $withLink = false
+    ): ComponentsBuilder
     {
-        return $builder->row(fn(RowBuilder $row) => $row
-            ->primaryButton(
-                customId: encode_custom_id('danbooru.search', 'after', [$tags, $rating, $id]),
-                disabled: $backDisabled,
-                emoji: ['id' => config('danbooru.emoji.back_arrow')],
-            )
-            ->primaryButton(
-                customId: encode_custom_id('danbooru.search', 'before', [$tags, $rating, $id]),
-                disabled: $forwardDisabled,
-                emoji: ['id' => config('danbooru.emoji.next_arrow')],
-            )
-            ->dangerButton(
-                customId: encode_custom_id('danbooru.search', 'remove'),
-                emoji: ['id' => config('danbooru.emoji.trash')]
-            )
-            ->secondaryButton(
-                customId: encode_custom_id('danbooru.search', 'favorite', [$id]),
-                emoji: ['id' => config('danbooru.emoji.star')]
-            )
-        );
+        $data = [$tags, $rating, $id];
+
+        return $builder->row(function(RowBuilder $row) use ($data, $id, $forwardDisabled, $backDisabled, $withLink) {
+            $row
+                ->primaryButton(
+                    customId: encode_custom_id('danbooru.search', 'after', $data),
+                    disabled: $backDisabled,
+                    emoji: ['id' => config('danbooru.emoji.back_arrow')],
+                )
+                ->primaryButton(
+                    customId: encode_custom_id('danbooru.search', 'before', $data),
+                    disabled: $forwardDisabled,
+                    emoji: ['id' => config('danbooru.emoji.next_arrow')],
+                )
+                ->dangerButton(
+                    customId: encode_custom_id('danbooru.utility', 'remove'),
+                    emoji: ['id' => config('danbooru.emoji.trash')]
+                )
+                ->secondaryButton(
+                    customId: encode_custom_id('danbooru.search', 'favorite', [$id]),
+                    emoji: ['id' => config('danbooru.emoji.star')]
+                );
+
+            if ($withLink) {
+                $row->linkButton(
+                    label: 'View On Danbooru',
+                    url: "https://danbooru.donmai.us/posts/$id",
+                );
+            }
+
+            return $row;
+        });
+
     }
 
     public static function renderFavorites(InteractionResponse $response, string $userId, ?string $encodedCursor = null): InteractionResponse
@@ -109,7 +141,7 @@ class DanbooruService
         return $response
             ->embed(fn(EmbedBuilder $embed) => $embed
                 ->author("Danbooru", "https://danbooru.donmai.us/posts/$favorite->id")
-                ->image($post->file_url)
+                ->image($post->large_file_url)
                 ->color(match ($post->rating[0]) {
                     's' => config('discord.safe_color'),
                     'q' => config('discord.questionable_color'),
@@ -132,13 +164,48 @@ class DanbooruService
                             emoji: ['id' => config('danbooru.emoji.next_arrow')],
                         )
                         ->dangerButton(
-                            customId: encode_custom_id('danbooru.search', 'remove'),
+                            customId: encode_custom_id('danbooru.utility', 'remove'),
                             emoji: ['id' => config('danbooru.emoji.trash')]
                         )
                         ->secondaryButton(
-                            customId: encode_custom_id('danbooru.search', 'favorite', [$post->id]),
+                            customId: encode_custom_id('danbooru.utility', 'favorite', [$post->id]),
                             emoji: ['id' => config('danbooru.emoji.star')]
                         )
+                )
+            );
+    }
+
+    public static function renderRandomPost(InteractionResponse $response, string $tags, string $rating = null): InteractionResponse
+    {
+        $tags = $tags . ($rating ? "rating:$rating" : '');
+        $post = Post::random($tags);
+
+        return $response
+            ->embed(fn(EmbedBuilder $embed) => $embed
+                ->author("Danbooru", "https://danbooru.donmai.us/posts/$post->id")
+                ->image($post->large_file_url)
+                ->color(match ($post->rating[0]) {
+                    's' => config('discord.safe_color'),
+                    'q' => config('discord.questionable_color'),
+                    'e' => config('discord.explicit_color'),
+                    default => 0,
+                })
+                ->footer(text: "Post ID: $post->id")
+            )
+            ->components(fn(ComponentsBuilder $builder) =>
+                $builder->row(fn (RowBuilder $row) =>
+                    $row->primaryButton(
+                        customId: encode_custom_id('danbooru.random', 'random', [$tags]),
+                        emoji: ['id' => config('danbooru.emoji.shuffle')],
+                    )
+                    ->dangerButton(
+                        customId: encode_custom_id('danbooru.utility', 'remove'),
+                        emoji: ['id' => config('danbooru.emoji.trash')]
+                    )
+                    ->secondaryButton(
+                        customId: encode_custom_id('danbooru.utility', 'favorite', [$post->id]),
+                        emoji: ['id' => config('danbooru.emoji.star')]
+                    )
                 )
             );
     }

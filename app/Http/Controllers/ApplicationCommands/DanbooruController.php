@@ -6,11 +6,14 @@ use App\Attributes\ApplicationCommand;
 use App\Attributes\ApplicationCommand\Subcommand;
 use App\Attributes\ApplicationCommand\Arguments\StringArg;
 use App\Attributes\ApplicationCommand\Autocomplete;
+use App\Danbooru\Artist;
 use App\Danbooru\Post;
 use App\Danbooru\Wiki;
+use App\Discord\ComponentsBuilder;
 use App\Discord\EmbedBuilder;
 use App\Discord\Interaction;
 use App\Discord\InteractionResponse;
+use App\Http\Controllers\Autocomplete\DanbooruArtistController;
 use App\Http\Controllers\Autocomplete\DanbooruSearchController;
 use App\Http\Controllers\Autocomplete\DanbooruWikiController;
 use App\Services\DanbooruService;
@@ -74,16 +77,37 @@ class DanbooruController
                     ->title($wiki->title)
                     ->description(dtext_to_markdown($wiki->body))
                     ->footer(text: "Wiki ID: $wiki->id")
+            )
+            ->components(fn (ComponentsBuilder $builder) =>
+                $builder->row(fn ($row) =>
+                    $row->dangerButton(
+                        customId: encode_custom_id('danbooru.utility', 'remove'),
+                        emoji: ['id' => config('danbooru.emoji.trash')]
+                    )
+                )
             );
 
         $posts->each(fn (Post $post) => $response
             ->embed(fn (EmbedBuilder $builder) =>
                 $builder
                     ->url("https://danbooru.donmai.us/wiki_pages/$wiki->title")
-                    ->image($post->file_url)
+                    ->image($post->large_file_url)
             )
         );
 
         return $response;
+    }
+
+    #[Subcommand(description: "Find random posts.")]
+    #[Autocomplete(DanbooruSearchController::class)]
+    #[StringArg(name: 'tags', description: 'Tags to search', required: false, autocomplete: true)]
+    #[StringArg(
+        name: 'rating',
+        description: 'Rating to filter',
+        choices: ['Explicit' => 'e', 'Questionable' => 'q', 'Safe' => 's'])
+    ]
+    public function random(Interaction $interaction, string $tags = '', string $rating = null): InteractionResponse
+    {
+        return DanbooruService::renderRandomPost($interaction->response(), $tags, $rating);
     }
 }

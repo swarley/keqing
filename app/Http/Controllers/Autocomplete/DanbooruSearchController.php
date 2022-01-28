@@ -25,7 +25,7 @@ class DanbooruSearchController extends Controller
         $tags = [];
 
         foreach ($results as $result) {
-            $tags[$value . ' ' . $result['label']] = $value . ' ' . $result['value'];
+            $tags[$value . ' ' . $result['value']] = $value . ' ' . $result['value'];
         }
         return $tags;
     }

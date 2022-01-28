@@ -23,7 +23,7 @@ class VerifyDiscordSignature
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      */
-    public function handle(Request $request, Closure $next): JsonResponse
+    public function handle(Request $request, Closure $next)
     {
         $signature = hex2bin($request->header('X-Signature-Ed25519'));
         $message = $request->header('X-Signature-Timestamp') . $request->getContent();

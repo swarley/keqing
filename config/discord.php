@@ -12,6 +12,8 @@ return [
     'components' => [
         \App\Http\Controllers\Components\DanbooruSearchController::class,
         \App\Http\Controllers\Components\DanbooruFavoritesController::class,
+        \App\Http\Controllers\Components\DanbooruRandomController::class,
+        \App\Http\Controllers\Components\DanbooruUtilityController::class,
     ],
 
     'safe_color' => 0x00FF00,

@@ -9,7 +9,6 @@ use App\Discord\InteractionOption;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
 use ReflectionClass;
 
@@ -41,7 +40,7 @@ class InteractionController extends Controller
         return response()->json(['message' => 'invalid interaction type'], 400);
     }
 
-    private function dispatchCommand(Interaction $interaction): JsonResponse
+    private function dispatchCommand(Interaction $interaction)
     {
         $commandController = $this->findCommand($interaction->data->name);
 
@@ -78,7 +77,7 @@ class InteractionController extends Controller
         return response()->json($responseData);
     }
 
-    private function dispatchComponent(Interaction $interaction): JsonResponse
+    private function dispatchComponent(Interaction $interaction)
     {
         @[$namespace, $method, $args] = explode("\0", $interaction->data->custom_id, 3);
         $args = explode("\0", $args ?? '');

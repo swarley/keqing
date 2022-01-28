@@ -22,9 +22,13 @@ class InteractionResponse
     public ?array $embeds;
     public ?array $components;
     public ?string $namespace;
+    public array $files;
+    public array $attachments;
 
     public function __construct(Interaction $interaction)
     {
+        $this->files = [];
+        $this->attachments = [];
         $this->interaction = $interaction;
         $this->namespace = $interaction->namespace();
 
@@ -102,6 +106,22 @@ class InteractionResponse
         return $this;
     }
 
+    public function attachment(string $filename, mixed $content): static
+    {
+        $id = count($this->files);
+        $this->files[] = [
+            'name' => 'files[' . $id . ']',
+            'filename' => $filename,
+            'contents' => $content,
+        ];
+        $this->attachments[] = [
+            'id' => $id,
+            'name' => $filename,
+            'description' => 'pls',
+        ];
+        return $this;
+    }
+
     public function getTypeName(): string
     {
         return match ($this->type) {
@@ -126,6 +146,7 @@ class InteractionResponse
                     'choices' => $this->choices,
                     'embeds' => $this->embeds,
                     'components' => $this->components,
+//                    'attachments' => $this->attachments,
                 ])
                 : null,
         ]);

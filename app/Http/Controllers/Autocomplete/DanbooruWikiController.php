@@ -11,8 +11,6 @@ class DanbooruWikiController extends Controller
 {
     public function tag(Interaction $interaction, ?string $value = '')
     {
-        Log::info('here');
-
         $results = Http::get(
             "https://danbooru.donmai.us/autocomplete.json?search[query]=$value&search[type]=wiki_page&limit=10"
         )->json();
