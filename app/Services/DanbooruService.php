@@ -24,7 +24,7 @@ class DanbooruService
 
         /** @var ?Post $post */
         try {
-            $post = Post::search($tags . ' -status:deleted -status:pending', $rating, 2, $id)->first();
+            $post = Post::search($tags . ' -status:deleted -status:pending', $rating, 1, $id)->first();
         } catch (UnknownProperties $ex) {
             report ($ex);
         }
@@ -64,7 +64,7 @@ class DanbooruService
             return $response
                 ->content($post->large_file_url)
                 ->components(fn(ComponentsBuilder $builder) =>
-                    static::searchComponents($builder, $tags, $rating, $post->id)
+                    static::searchComponents($builder, $tags, $rating, $post->id, withLink: true)
                 );
         }
 
