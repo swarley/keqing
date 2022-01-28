@@ -98,7 +98,7 @@ class DanbooruService
                     emoji: ['id' => config('danbooru.emoji.trash')]
                 )
                 ->secondaryButton(
-                    customId: encode_custom_id('danbooru.search', 'favorite', [$id]),
+                    customId: encode_custom_id('danbooru.utility', 'favorite', [$id]),
                     emoji: ['id' => config('danbooru.emoji.star')]
                 );
 
