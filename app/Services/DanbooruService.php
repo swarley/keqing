@@ -44,6 +44,7 @@ class DanbooruService
 
         if (in_array($ext, ['jpg', 'png', 'gif', 'webp', 'jpeg'])) {
             return $response
+                ->content(null)
                 ->embed(fn(EmbedBuilder $embed) => $embed
                     ->image($post->large_file_url)
                     ->author("Danbooru", "https://danbooru.donmai.us/posts/$post->id")
