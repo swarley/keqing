@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3ed4f78e45dae67f897ee7e4cdd6e252",
+    "content-hash": "9ae3b7d37d1c512b64020e8e9272fad1",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1969,49 +1969,6 @@
                 }
             ],
             "time": "2021-10-01T21:08:31+00:00"
-        },
-        {
-            "name": "mrmadclown/laravel-multipart-response",
-            "version": "v1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/MrMadClown/laravel-multipart-response.git",
-                "reference": "a6b698fde63b67c05e4b231ee9f6e0f1645fdfc1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/MrMadClown/laravel-multipart-response/zipball/a6b698fde63b67c05e4b231ee9f6e0f1645fdfc1",
-                "reference": "a6b698fde63b67c05e4b231ee9f6e0f1645fdfc1",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^7.2",
-                "illuminate/routing": "^8.19",
-                "php": "^8.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "MrMadClown\\LaravelMultipartResponse\\ServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "MrMadClown\\LaravelMultipartResponse\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A Laravel Package for Multipart Responses.",
-            "support": {
-                "issues": "https://github.com/MrMadClown/laravel-multipart-response/issues",
-                "source": "https://github.com/MrMadClown/laravel-multipart-response/tree/v1.0"
-            },
-            "time": "2020-12-21T10:20:39+00:00"
         },
         {
             "name": "nesbot/carbon",
